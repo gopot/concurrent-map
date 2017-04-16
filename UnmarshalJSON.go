@@ -21,9 +21,9 @@ import "encoding/json"
 // It recursively unmarshal values of JSON sructures into *ConcurrentMap, similar to unmarshalling into map[string]interface{}.
 // Also, if some value represents a slice, it inspects its elements and unmarshals them into *ConcurrentMap if possible.
 //
-// While unmarshalling on non-empty map, overlapping key-values will be overiden.
+// While unmarshalling on non-empty map, overlapping key-values are overwritten.
 //
-// It is safe to concurrently Unmarshal, Get and/or Set. However, if JSON contains some key-value, it is guaranteed to be overwritten only by completion of UnmarshalJSON() method.
+// It is safe to concurrently Unmarshal, Get and/or Set. However, JSON key-value(s) are guaranteed to be available as up to date only by completion of UnmarshalJSON() method.
 //
 // TODO(gopot) : improve performance and minimize allocs.
 func (this *ConcurrentMap) UnmarshalJSON(data []byte) error {
