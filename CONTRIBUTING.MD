@@ -30,3 +30,5 @@ Following these guidelines helps to communicate that you respect the time of the
 1. Test(s) are better table driven.
 1. It is fine to have tests for private members, but not mixed with concurrent and/or Public members tests. It would be wonderfull to have each type of tests in its own file.
 1. If some member should be safe for concurrent access, it should be tested. `-race` is acceptable, but should be mentioned in documentation. 
+
+Copyright © 2017 Ivan A Kostko (github.com/ivan-kostko; github.com/gopot)
