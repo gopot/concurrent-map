@@ -45,7 +45,7 @@ func MakeConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 }
 
 // Makes Concurrent copy of the `m` recursively.
-// In case the value is map[string]interface{} - it converts it into ConcurrentMap recursively as well.
+// In case the value is of type map[interface{}]interface{} - it converts it into ConcurrentMap recursively as well.
 func MakeRecursivelyConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 	items := make(map[interface{}]interface{}, len(m))
 	for key, value := range m {
