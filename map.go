@@ -22,12 +22,12 @@ import "sync"
 // NOTE(x): In case of operating on big amounts of data or need of extended functionality - consider to use https://github.com/streamrail/concurrent-map
 type ConcurrentMap struct {
 	items map[interface{}]interface{}
-	lock  *sync.RWMutex
+	lock  sync.RWMutex
 }
 
 // Private factory. It assigns items and set up RWMutex
 func newConcurrentMap(items map[interface{}]interface{}) *ConcurrentMap {
-	return &ConcurrentMap{items: items, lock: &sync.RWMutex{}}
+	return &ConcurrentMap{items: items, lock: sync.RWMutex{}}
 }
 
 // Generic factory. Instantiates and initializes ConcurrentMap with `initCap` capacity.
