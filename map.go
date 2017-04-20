@@ -16,7 +16,8 @@ package concurrentmap
 
 import "sync"
 
-// The ConcurrentMap type represents light weight and simple API for concurrent map
+// The ConcurrentMap type represents light-weight and simple API for concurrent-safe operations over map[interface{}]interface{}
+// Keys must be of comparable types as for general map[interface{}]interface{}
 //
 // NOTE(x): In case of operating on big amounts of data or need of extended functionality - consider to use https://github.com/streamrail/concurrent-map
 type ConcurrentMap struct {
