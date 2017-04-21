@@ -15,7 +15,7 @@
 package concurrentmap_test
 
 import (
-	. "concurrent-map"
+	. "github.com/gopot/concurrent-map"
 	"reflect"
 	"testing"
 )

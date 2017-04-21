@@ -22,7 +22,8 @@ const (
 	DEFAULT_ONSETCAPACITY = 1 // Set or SetIfNotExists gonna add at least 1 item
 )
 
-// The ConcurrentMap type represents light weight and simple API for concurrent map
+// The ConcurrentMap type represents light-weight and simple API for concurrent-safe operations over map[interface{}]interface{}
+// Keys must be of comparable types as for general map[interface{}]interface{}
 //
 // NOTE(x): In case of operating on big amounts of data or need of extended functionality - consider to use https://github.com/streamrail/concurrent-map
 type ConcurrentMap struct {
@@ -51,7 +52,7 @@ func MakeConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 }
 
 // Makes Concurrent copy of the `m` recursively.
-// In case the value is map[string]interface{} - it converts it into ConcurrentMap recursively as well.
+// In case the value is of type map[interface{}]interface{} - it converts it into ConcurrentMap recursively as well.
 func MakeRecursivelyConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 	items := make(map[interface{}]interface{}, len(m))
 	for key, value := range m {
