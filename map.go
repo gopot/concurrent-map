@@ -22,7 +22,7 @@ const (
 	DEFAULT_ONSETCAPACITY = 1 // Set or SetIfNotExists gonna add at least 1 item
 )
 
-// The ConcurrentMap type represents light-weight and simple API for concurrent-safe operations over map[interface{}]interface{}
+// The ConcurrentMap type represents light-weight and simple API for concurrent-safe operations over `map[interface{}]interface{}`
 // Keys must be of comparable types as for general map[interface{}]interface{}
 //
 // NOTE(x): In case of operating on big amounts of data or need of extended functionality - consider to use https://github.com/streamrail/concurrent-map
@@ -52,7 +52,7 @@ func MakeConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 }
 
 // Makes Concurrent copy of the `m` recursively.
-// In case the value is of type map[interface{}]interface{} - it converts it into ConcurrentMap recursively as well.
+// In case the value is of type `map[interface{}]interface{}` - it converts it into ConcurrentMap recursively as well.
 func MakeRecursivelyConcurrentCopy(m map[interface{}]interface{}) *ConcurrentMap {
 	items := make(map[interface{}]interface{}, len(m))
 	for key, value := range m {
@@ -88,7 +88,7 @@ func (this *ConcurrentMap) Set(key interface{}, val interface{}) {
 	this.items[key] = val
 }
 
-// Sets the given value under the specified key and returns true, if the key didn't exist uppon invokation.
+// Sets the given value under the specified key and returns true, if the key didn't exist upon invokation.
 // Returns false and does nothing, in case there is already an entry with the same key.
 func (this *ConcurrentMap) SetIfNotExists(key interface{}, val interface{}) bool {
 	this.lock.Lock()
@@ -113,7 +113,7 @@ func (this *ConcurrentMap) Remove(key interface{}) {
 	delete(this.items, key)
 }
 
-// Returns copy of content as non concurrent(general) map.
+// Returns copy of content as non concurrent(general) `map[interface{}]interface{}`.
 func (this *ConcurrentMap) Items() map[interface{}]interface{} {
 	this.lock.RLock()
 	defer this.lock.RUnlock()

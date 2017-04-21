@@ -15,9 +15,10 @@
 package concurrentmap_test
 
 import (
-	. "github.com/gopot/concurrent-map"
 	"reflect"
 	"testing"
+
+	. "github.com/gopot/concurrent-map"
 )
 
 func TestNewItemsCycle(t *testing.T) {
@@ -46,7 +47,7 @@ func TestNewItemsCycle(t *testing.T) {
 			actualItems := newCm.Items()
 
 			if !(reflect.DeepEqual(actualItems, expectedItems)) {
-				t.Errorf("%s :: New(%d) TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, initCapacity, actualItems, expectedItems)
+				t.Errorf("%s :: (New(%d)).Items() returned \r\n %v \r\n while expected \r\n %v ", testAlias, initCapacity, actualItems, expectedItems)
 			}
 		}
 		t.Run(testAlias, testFn)
@@ -80,7 +81,7 @@ func TestMakeConcurrentCopyItemsCycle(t *testing.T) {
 			actualItems := copyCm.Items()
 
 			if !(reflect.DeepEqual(actualItems, expectedItems)) {
-				t.Errorf("%s :: MakeConcurrentCopy TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, actualItems, expectedItems)
+				t.Errorf("%s :: (MakeConcurrentCopy(%#v)).Items() returned \r\n %v \r\n while expected \r\n %v ", testAlias, originalMap, actualItems, expectedItems)
 			}
 		}
 		t.Run(testAlias, testFn)
