@@ -196,7 +196,7 @@ func TestGet(t *testing.T) {
 				t.Errorf("%s :: cm.Get(%s) returned Value \r\n %#v \r\n while expected \r\n %#v ", testAlias, getAKey, actualValue, expectedValue)
 			}
 			if actualOk != expectedOk {
-				t.Errorf("%s :: cm.Get(%s) returned error \r\n %#v \r\n while expected \r\n %#v ", testAlias, getAKey, actualOk, expectedOk)
+				t.Errorf("%s :: cm.Get(%s) returned ok as \r\n %#v \r\n while expected \r\n %#v ", testAlias, getAKey, actualOk, expectedOk)
 			}
 		}
 		t.Run(testAlias, testFn)
