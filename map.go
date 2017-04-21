@@ -16,17 +16,23 @@ package concurrentmap
 
 import "sync"
 
+// Default values
+const (
+	// Represents default capacity when initializes on Set or SetIfNotExists operation(s)
+	DEFAULT_ONSETCAPACITY = 1 // Set or SetIfNotExists gonna add at least 1 item
+)
+
 // The ConcurrentMap type represents light weight and simple API for concurrent map
 //
 // NOTE(x): In case of operating on big amounts of data or need of extended functionality - consider to use https://github.com/streamrail/concurrent-map
 type ConcurrentMap struct {
 	items map[interface{}]interface{}
-	lock  *sync.RWMutex
+	lock  sync.RWMutex
 }
 
 // Private factory. It assigns items and set up RWMutex
 func newConcurrentMap(items map[interface{}]interface{}) *ConcurrentMap {
-	return &ConcurrentMap{items: items, lock: &sync.RWMutex{}}
+	return &ConcurrentMap{items: items, lock: sync.RWMutex{}}
 }
 
 // Generic factory. Instantiates and initializes ConcurrentMap with `initCap` capacity.
@@ -75,7 +81,7 @@ func (this *ConcurrentMap) Set(key interface{}, val interface{}) {
 
 	if this.items == nil {
 		// we would need atleast one element in map
-		this.items = make(map[interface{}]interface{}, 1)
+		this.items = make(map[interface{}]interface{}, DEFAULT_ONSETCAPACITY)
 	}
 
 	this.items[key] = val
@@ -90,7 +96,7 @@ func (this *ConcurrentMap) SetIfNotExists(key interface{}, val interface{}) bool
 	if _, ok := this.items[key]; !ok {
 		if this.items == nil {
 			// we would need atleast one element in map
-			this.items = make(map[interface{}]interface{}, 1)
+			this.items = make(map[interface{}]interface{}, DEFAULT_ONSETCAPACITY)
 		}
 		this.items[key] = val
 		return true

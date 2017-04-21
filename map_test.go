@@ -1,4 +1,4 @@
-//   Copyright 2015-2017 Ivan A Kostko (github.com/ivan-kostko; github.com/gopot)
+//   Copyright © 2015-2017 Ivan A Kostko (github.com/ivan-kostko; github.com/gopot)
 
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -20,31 +20,33 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
+func TestNewItemsCycle(t *testing.T) {
 
 	testCases := []struct {
-		TestAlias    string
-		InitCapacity int
-		ExpectedMap  map[interface{}]interface{}
+		TestAlias     string
+		InitCapacity  int
+		ExpectedItems map[interface{}]interface{}
 	}{
 		{
-			TestAlias:    "Converting simple map into a concurrent map",
-			InitCapacity: 1,
-			ExpectedMap:  map[interface{}]interface{}{},
+			TestAlias:     "Converting simple map into a concurrent map",
+			InitCapacity:  1,
+			ExpectedItems: map[interface{}]interface{}{},
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
 		initCapacity := testCase.InitCapacity
-		expectedMap := testCase.ExpectedMap
+		expectedItems := testCase.ExpectedItems
 
 		testFn := func(t *testing.T) {
 
-			actualCm := New(initCapacity)
+			newCm := New(initCapacity)
 
-			if !(reflect.DeepEqual(actualCm.Items(), expectedMap)) {
-				t.Errorf("%s :: New(%d) TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, initCapacity, actualCm.Items(), expectedMap)
+			actualItems := newCm.Items()
+
+			if !(reflect.DeepEqual(actualItems, expectedItems)) {
+				t.Errorf("%s :: New(%d) TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, initCapacity, actualItems, expectedItems)
 			}
 		}
 		t.Run(testAlias, testFn)
@@ -52,31 +54,33 @@ func TestNew(t *testing.T) {
 
 }
 
-func TestMakeConcurrentCopy(t *testing.T) {
+func TestMakeConcurrentCopyItemsCycle(t *testing.T) {
 
 	testCases := []struct {
-		TestAlias   string
-		OriginalMap map[interface{}]interface{}
-		ExpectedMap map[interface{}]interface{}
+		TestAlias     string
+		OriginalMap   map[interface{}]interface{}
+		ExpectedItems map[interface{}]interface{}
 	}{
 		{
-			TestAlias:   "Converting simple map into a concurrent map",
-			OriginalMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
-			ExpectedMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "Converting simple map into a concurrent map",
+			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
 		originalMap := testCase.OriginalMap
-		expectedMap := testCase.ExpectedMap
+		expectedItems := testCase.ExpectedItems
 
 		testFn := func(t *testing.T) {
 
-			actualCm := MakeConcurrentCopy(originalMap)
+			copyCm := MakeConcurrentCopy(originalMap)
 
-			if !(reflect.DeepEqual(actualCm.Items(), expectedMap)) {
-				t.Errorf("%s :: MakeConcurrentCopy TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, actualCm.Items(), expectedMap)
+			actualItems := copyCm.Items()
+
+			if !(reflect.DeepEqual(actualItems, expectedItems)) {
+				t.Errorf("%s :: MakeConcurrentCopy TSM with items as \r\n %v \r\n while expected \r\n %v ", testAlias, actualItems, expectedItems)
 			}
 		}
 		t.Run(testAlias, testFn)
@@ -84,7 +88,7 @@ func TestMakeConcurrentCopy(t *testing.T) {
 
 }
 
-func TestMakeRecursivelyConcurrentCopy(t *testing.T) {
+func TestMakeRecursivelyConcurrentCopyItemsCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias     string
@@ -110,9 +114,9 @@ func TestMakeRecursivelyConcurrentCopy(t *testing.T) {
 
 		testFn := func(t *testing.T) {
 
-			actualCm := MakeRecursivelyConcurrentCopy(originalMap)
+			copyCm := MakeRecursivelyConcurrentCopy(originalMap)
 
-			actualItems := actualCm.Items()
+			actualItems := copyCm.Items()
 
 			if !(reflect.DeepEqual(actualItems, expectedItems)) {
 				t.Errorf("%s :: (MakeRecursivelyConcurrentCopy(%#v)).Items() returned \r\n %#v \r\n while expected \r\n %#v ", testAlias, originalMap, actualItems, expectedItems)
@@ -127,21 +131,49 @@ func TestGet(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias     string
-		OriginalMap   map[interface{}]interface{}
+		Cm            *ConcurrentMap
 		GetAKey       interface{}
 		ExpectedValue interface{}
 		ExpectedOk    bool
 	}{
 		{
-			TestAlias:     "Get existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Get existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			GetAKey:       "key2",
 			ExpectedValue: 123,
 			ExpectedOk:    true,
 		},
 		{
-			TestAlias:     "Get non-existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Get non-existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			GetAKey:       "key3",
+			ExpectedValue: nil,
+			ExpectedOk:    false,
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Get existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			GetAKey:       "key2",
+			ExpectedValue: 123,
+			ExpectedOk:    true,
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Get non-existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			GetAKey:       "key3",
+			ExpectedValue: nil,
+			ExpectedOk:    false,
+		},
+		{
+			TestAlias:     "New(0) and Get non-existing key",
+			Cm:            New(0),
+			GetAKey:       "key3",
+			ExpectedValue: nil,
+			ExpectedOk:    false,
+		},
+		{
+			TestAlias:     "new(ConcurrentMap) and Get non-existing key",
+			Cm:            new(ConcurrentMap),
 			GetAKey:       "key3",
 			ExpectedValue: nil,
 			ExpectedOk:    false,
@@ -150,14 +182,12 @@ func TestGet(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		getAKey := testCase.GetAKey
 		expectedValue := testCase.ExpectedValue
 		expectedOk := testCase.ExpectedOk
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			actualValue, actualOk := cm.Get(getAKey)
 
@@ -176,34 +206,56 @@ func TestGet(t *testing.T) {
 func TestSetGetCycle(t *testing.T) {
 
 	testCases := []struct {
-		TestAlias   string
-		OriginalMap map[interface{}]interface{}
-		SetAKey     interface{}
-		SetAValue   interface{}
+		TestAlias string
+		Cm        *ConcurrentMap
+		SetAKey   interface{}
+		SetAValue interface{}
 	}{
 		{
-			TestAlias:   "Set existing key",
-			OriginalMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
-			SetAKey:     "key2",
-			SetAValue:   321,
+			TestAlias: "MakeConcurrentCopy and Set existing key",
+			Cm:        MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:   "key2",
+			SetAValue: 321,
 		},
 		{
-			TestAlias:   "Set non-existing key",
-			OriginalMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
-			SetAKey:     "key3",
-			SetAValue:   4.56,
+			TestAlias: "MakeConcurrentCopy and Set non-existing key",
+			Cm:        MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:   "key3",
+			SetAValue: 4.56,
+		},
+		{
+			TestAlias: "MakeRecursivelyConcurrentCopy and Set existing key",
+			Cm:        MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:   "key2",
+			SetAValue: 321,
+		},
+		{
+			TestAlias: "MakeRecursivelyConcurrentCopy and Set non-existing key",
+			Cm:        MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:   "key3",
+			SetAValue: 4.56,
+		},
+		{
+			TestAlias: "New(0) and Set non-existing key",
+			Cm:        New(0),
+			SetAKey:   "key3",
+			SetAValue: 4.56,
+		},
+		{
+			TestAlias: "new(ConcurrentMap) and Set non-existing key",
+			Cm:        new(ConcurrentMap),
+			SetAKey:   "key3",
+			SetAValue: 4.56,
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		setAKey := testCase.SetAKey
 		setAValue := testCase.SetAValue
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			cm.Set(setAKey, setAValue)
 
@@ -225,37 +277,63 @@ func TestSetItemsCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias     string
-		OriginalMap   map[interface{}]interface{}
+		Cm            *ConcurrentMap
 		SetAKey       interface{}
 		SetAValue     interface{}
 		ExpectedItems map[interface{}]interface{}
 	}{
 		{
-			TestAlias:     "Set existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Set existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			SetAKey:       "key2",
 			SetAValue:     321,
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 321},
 		},
 		{
-			TestAlias:     "Set non-existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Set non-existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			SetAKey:       "key3",
 			SetAValue:     4.56,
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123, "key3": 4.56},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Set existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:       "key2",
+			SetAValue:     321,
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 321},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Set non-existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123, "key3": 4.56},
+		},
+		{
+			TestAlias:     "New(0) and Set non-existing key",
+			Cm:            New(0),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key3": 4.56},
+		},
+		{
+			TestAlias:     "new(ConcurrentMap) and Set non-existing key",
+			Cm:            new(ConcurrentMap),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key3": 4.56},
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		setAKey := testCase.SetAKey
 		setAValue := testCase.SetAValue
 		expectedItems := testCase.ExpectedItems
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			cm.Set(setAKey, setAValue)
 
@@ -273,38 +351,64 @@ func TestSetItemsCycle(t *testing.T) {
 func TestSetIfNotExistsReturnOk(t *testing.T) {
 
 	testCases := []struct {
-		TestAlias   string
-		OriginalMap map[interface{}]interface{}
-		SetAKey     interface{}
-		SetAValue   interface{}
-		ExpectedOk  bool
+		TestAlias  string
+		Cm         *ConcurrentMap
+		SetAKey    interface{}
+		SetAValue  interface{}
+		ExpectedOk bool
 	}{
 		{
-			TestAlias:   "Set existing key",
-			OriginalMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
-			SetAKey:     "key2",
-			SetAValue:   321,
-			ExpectedOk:  false,
+			TestAlias:  "MakeConcurrentCopy and Set existing key",
+			Cm:         MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:    "key2",
+			SetAValue:  321,
+			ExpectedOk: false,
 		},
 		{
-			TestAlias:   "Set non-existing key",
-			OriginalMap: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
-			SetAKey:     "key3",
-			SetAValue:   4.56,
-			ExpectedOk:  true,
+			TestAlias:  "MakeConcurrentCopy and Set non-existing key",
+			Cm:         MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:    "key3",
+			SetAValue:  4.56,
+			ExpectedOk: true,
+		},
+		{
+			TestAlias:  "MakeRecursivelyConcurrentCopy and Set existing key",
+			Cm:         MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:    "key2",
+			SetAValue:  321,
+			ExpectedOk: false,
+		},
+		{
+			TestAlias:  "MakeRecursivelyConcurrentCopy and Set non-existing key",
+			Cm:         MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:    "key3",
+			SetAValue:  4.56,
+			ExpectedOk: true,
+		},
+		{
+			TestAlias:  "New(0) and Set non-existing key",
+			Cm:         New(0),
+			SetAKey:    "key3",
+			SetAValue:  4.56,
+			ExpectedOk: true,
+		},
+		{
+			TestAlias:  "new(ConcurrentMap) and Set non-existing key",
+			Cm:         new(ConcurrentMap),
+			SetAKey:    "key3",
+			SetAValue:  4.56,
+			ExpectedOk: true,
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		setAKey := testCase.SetAKey
 		setAValue := testCase.SetAValue
 		expectedOk := testCase.ExpectedOk
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			actualOk := cm.SetIfNotExists(setAKey, setAValue)
 
@@ -322,21 +426,49 @@ func TestSetIfNotExistsGetCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias        string
-		OriginalMap      map[interface{}]interface{}
+		Cm               *ConcurrentMap
 		SetAKey          interface{}
 		SetAValue        interface{}
 		ExpectedGetValue interface{}
 	}{
 		{
-			TestAlias:        "Set existing key",
-			OriginalMap:      map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:        "MakeConcurrentCopy and Set existing key",
+			Cm:               MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			SetAKey:          "key2",
 			SetAValue:        321,
 			ExpectedGetValue: 123,
 		},
 		{
-			TestAlias:        "Set non-existing key",
-			OriginalMap:      map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:        "MakeConcurrentCopy and Set non-existing key",
+			Cm:               MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:          "key3",
+			SetAValue:        4.56,
+			ExpectedGetValue: 4.56,
+		},
+		{
+			TestAlias:        "MakeRecursivelyConcurrentCopy and Set existing key",
+			Cm:               MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:          "key2",
+			SetAValue:        321,
+			ExpectedGetValue: 123,
+		},
+		{
+			TestAlias:        "MakeRecursivelyConcurrentCopy and Set non-existing key",
+			Cm:               MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:          "key3",
+			SetAValue:        4.56,
+			ExpectedGetValue: 4.56,
+		},
+		{
+			TestAlias:        "New(0) and Set non-existing key",
+			Cm:               New(0),
+			SetAKey:          "key3",
+			SetAValue:        4.56,
+			ExpectedGetValue: 4.56,
+		},
+		{
+			TestAlias:        "new(ConcurrentMap) and Set non-existing key",
+			Cm:               new(ConcurrentMap),
 			SetAKey:          "key3",
 			SetAValue:        4.56,
 			ExpectedGetValue: 4.56,
@@ -345,14 +477,12 @@ func TestSetIfNotExistsGetCycle(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		setAKey := testCase.SetAKey
 		setAValue := testCase.SetAValue
 		expectedGetValue := testCase.ExpectedGetValue
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			_ = cm.SetIfNotExists(setAKey, setAValue)
 
@@ -375,37 +505,63 @@ func TestSetIfNotExistsItemsCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias     string
-		OriginalMap   map[interface{}]interface{}
+		Cm            *ConcurrentMap
 		SetAKey       interface{}
 		SetAValue     interface{}
 		ExpectedItems map[interface{}]interface{}
 	}{
 		{
-			TestAlias:     "Set existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Set existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			SetAKey:       "key2",
 			SetAValue:     321,
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
 		},
 		{
-			TestAlias:     "Set non-existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Set non-existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			SetAKey:       "key3",
 			SetAValue:     4.56,
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123, "key3": 4.56},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Set existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:       "key2",
+			SetAValue:     321,
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Set non-existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123, "key3": 4.56},
+		},
+		{
+			TestAlias:     "New(0) and Set non-existing key",
+			Cm:            New(0),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key3": 4.56},
+		},
+		{
+			TestAlias:     "new(ConcurrentMap) and Set non-existing key",
+			Cm:            new(ConcurrentMap),
+			SetAKey:       "key3",
+			SetAValue:     4.56,
+			ExpectedItems: map[interface{}]interface{}{"key3": 4.56},
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		setAKey := testCase.SetAKey
 		setAValue := testCase.SetAValue
 		expectedItems := testCase.ExpectedItems
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			_ = cm.SetIfNotExists(setAKey, setAValue)
 
@@ -424,21 +580,49 @@ func TestRemoveGetCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias        string
-		OriginalMap      map[interface{}]interface{}
+		Cm               *ConcurrentMap
 		RemoveAKey       interface{}
 		ExpectedGetValue interface{}
 		ExpectedGetOk    bool
 	}{
 		{
-			TestAlias:        "Remove existing key",
-			OriginalMap:      map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:        "MakeConcurrentCopy and Remove existing key",
+			Cm:               MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			RemoveAKey:       "key2",
 			ExpectedGetValue: nil,
 			ExpectedGetOk:    false,
 		},
 		{
-			TestAlias:        "Remove non-existing key",
-			OriginalMap:      map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:        "MakeConcurrentCopy and Remove non-existing key",
+			Cm:               MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			RemoveAKey:       "key3",
+			ExpectedGetValue: nil,
+			ExpectedGetOk:    false,
+		},
+		{
+			TestAlias:        "MakeRecursivelyConcurrentCopy and Remove existing key",
+			Cm:               MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			RemoveAKey:       "key2",
+			ExpectedGetValue: nil,
+			ExpectedGetOk:    false,
+		},
+		{
+			TestAlias:        "MakeRecursivelyConcurrentCopy and Remove non-existing key",
+			Cm:               MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			RemoveAKey:       "key3",
+			ExpectedGetValue: nil,
+			ExpectedGetOk:    false,
+		},
+		{
+			TestAlias:        "New(0) and Remove non-existing key",
+			Cm:               New(0),
+			RemoveAKey:       "key3",
+			ExpectedGetValue: nil,
+			ExpectedGetOk:    false,
+		},
+		{
+			TestAlias:        "new(ConcurrentMap) and Remove non-existing key",
+			Cm:               new(ConcurrentMap),
 			RemoveAKey:       "key3",
 			ExpectedGetValue: nil,
 			ExpectedGetOk:    false,
@@ -447,14 +631,12 @@ func TestRemoveGetCycle(t *testing.T) {
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		removeAKey := testCase.RemoveAKey
 		expectedGetValue := testCase.ExpectedGetValue
 		expectedGetOk := testCase.ExpectedGetOk
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			cm.Remove(removeAKey)
 
@@ -477,33 +659,55 @@ func TestRemoveItemsCycle(t *testing.T) {
 
 	testCases := []struct {
 		TestAlias     string
-		OriginalMap   map[interface{}]interface{}
+		Cm            *ConcurrentMap
 		RemoveAKey    interface{}
 		ExpectedItems map[interface{}]interface{}
 	}{
 		{
-			TestAlias:     "Remove existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Remove existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			RemoveAKey:    "key2",
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue"},
 		},
 		{
-			TestAlias:     "Remove non-existing key",
-			OriginalMap:   map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+			TestAlias:     "MakeConcurrentCopy and Remove non-existing key",
+			Cm:            MakeConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
 			RemoveAKey:    "key3",
 			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Remove existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			RemoveAKey:    "key2",
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue"},
+		},
+		{
+			TestAlias:     "MakeRecursivelyConcurrentCopy and Remove non-existing key",
+			Cm:            MakeRecursivelyConcurrentCopy(map[interface{}]interface{}{"key1": "stringValue", "key2": 123}),
+			RemoveAKey:    "key3",
+			ExpectedItems: map[interface{}]interface{}{"key1": "stringValue", "key2": 123},
+		},
+		{
+			TestAlias:     "New(0) and Remove non-existing key",
+			Cm:            New(0),
+			RemoveAKey:    "key3",
+			ExpectedItems: map[interface{}]interface{}{},
+		},
+		{
+			TestAlias:     "new(ConcurrentMap) and Remove non-existing key",
+			Cm:            new(ConcurrentMap),
+			RemoveAKey:    "key3",
+			ExpectedItems: map[interface{}]interface{}{},
 		},
 	}
 
 	for _, testCase := range testCases {
 		testAlias := testCase.TestAlias
-		originalMap := testCase.OriginalMap
+		cm := testCase.Cm
 		removeAKey := testCase.RemoveAKey
 		expectedItems := testCase.ExpectedItems
 
 		testFn := func(t *testing.T) {
-
-			cm := MakeConcurrentCopy(originalMap)
 
 			cm.Remove(removeAKey)
 
